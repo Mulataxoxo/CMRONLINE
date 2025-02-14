@@ -2,6 +2,7 @@
 let map;
 let directionsService;
 let directionsRenderer;
+let previousToPickupLine = null; // 🔥 Dodaj tę linię
 
 // 🔹 2. FUNKCJA `initMap()` – Tworzenie mapy
 function initMap() {
@@ -52,7 +53,7 @@ document.addEventListener("DOMContentLoaded", function () {
         initAutocomplete(pickupInput);
         initAutocomplete(deliveryInput);
     }
-    
+
     if (previousDeliveryInput) {
         initAutocomplete(previousDeliveryInput); // 🛠 Dodaj autocomplete dla poprzedniego rozładunku
     }
@@ -65,7 +66,10 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     if (pickupInput) {
-        pickupInput.addEventListener("blur", updateRoute);
+        pickupInput.addEventListener("blur", function () {
+            updateRoute();
+            drawPreviousToPickupLine(); // 🔥 Rysowanie linii, jeśli zmieni się załadunek
+        });
     }
 
     if (stopsContainer) {
@@ -74,6 +78,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (previousDeliveryInput) {
         previousDeliveryInput.addEventListener("blur", function () {
+            drawPreviousToPickupLine(); // 🔥 Rysuje linię między poprzednim rozładunkiem a załadunkiem
             calculateRoute(); // 🔥 Uwzględnia poprzedni rozładunek w obliczaniu dystansu
         });
     }
@@ -194,8 +199,19 @@ function setVatRate() {
 
 // 🔹 7. WYBÓR FIRMY I NUMERY AUT
 const vehicles = {
-    grand: ["WGM 1642G", "FZ 5217S", "FZ 0291S", "FZ 0292S", "FZ 0293S", "FZ 0294S", "FZ 0523S", "FZ 0612S"],
-    graal_wit: ["FZ3909R", "WGM2833F", "FZ8606R", "TK326AV", "TKI4674K", "FZ1936S"]
+    grand: [
+        "FZ5217S", "FZ0291S", "FZ0292S", "FZ0293S", "FZ0294S", "FZ0523S", 
+        "FZ0613S", "FZ3609S", "FZ4346S", "FZ4308S", "FZ4317S", "FZ4405S", 
+        "FZ9892S", "FZ0413T", "FZ0569T", "FZ0570T", "FZ0739T", "FZ0740U", 
+        "FZ5474U", "SR3687T", "FZ8190U"
+    ],
+    graal_wit: [
+        "FZ3909R", "WGM2833F", "FZ8606R", "TK326AV", "TKI4674K", "FZ1936S", 
+        "FZ2014S", "WPR8501P", "WPR8502P", "WPR8503P", "WPR8504P", "FZ0295S", 
+        "FZ0296S", "FZ3611S", "FZ3648S", "FZ3631S", "FZ4404S", "FZ9893S", 
+        "FZ0414T", "FZ0691T", "FZ0692T", "FZ0693T", "FZ0464U", "FZ0035R", 
+        "FZ3621V", "SR8402T"
+    ]
 };
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -220,17 +236,19 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 });
 
-// 🔹 8. LICZENIE TRASY Z PRZYSTANKAMI
+// 🔹 8. LICZENIE TRASY Z PRZYSTANKAMI (Z UWZGLĘDNIENIEM POPRZEDNIEGO ROZŁADUNKU)
 function calculateRoute() {
     if (!map || !directionsService || !directionsRenderer) {
         console.error("❌ Błąd: Mapa nie została jeszcze zainicjalizowana!");
         return;
     }
 
+    let previousDeliveryInput = document.getElementById("previous-delivery");
     let pickupInput = document.getElementById("pickup");
     let deliveryInput = document.getElementById("delivery");
     let distanceResult = document.getElementById("distance-result");
 
+    let previousDeliveryAddress = previousDeliveryInput ? previousDeliveryInput.value.trim() : "";
     let pickupAddress = pickupInput.value.trim();
     let deliveryAddress = deliveryInput.value.trim();
 
@@ -253,8 +271,11 @@ function calculateRoute() {
     let avoidTolls = tollRoadsElement ? !tollRoadsElement.checked : true;
     let avoidFerries = true;
 
+    // 🔥 Jeśli użytkownik podał poprzedni rozładunek, ustawiamy go jako punkt startowy
+    let startAddress = previousDeliveryAddress ? previousDeliveryAddress : pickupAddress;
+
     let request = {
-        origin: pickupAddress,
+        origin: startAddress, // Uwzględnia poprzedni rozładunek, jeśli podany
         destination: deliveryAddress,
         waypoints: waypoints,
         travelMode: "DRIVING",
@@ -265,6 +286,7 @@ function calculateRoute() {
     directionsService.route(request, function (result, status) {
         if (status === "OK") {
             directionsRenderer.setDirections(result);
+
             let totalDistance = result.routes[0].legs.reduce((acc, leg) => acc + leg.distance.value, 0);
             distanceResult.innerText = `Łączny dystans: ${(totalDistance / 1000).toFixed(1)} km`;
         } else {
@@ -273,6 +295,56 @@ function calculateRoute() {
         }
     });
 }
+
+function drawPreviousToPickupLine() {
+    let previousDeliveryInput = document.getElementById("previous-delivery");
+    let pickupInput = document.getElementById("pickup");
+
+    let previousAddress = previousDeliveryInput ? previousDeliveryInput.value.trim() : "";
+    let pickupAddress = pickupInput.value.trim();
+
+    if (!previousAddress || !pickupAddress) {
+        if (previousToPickupLine) {
+            previousToPickupLine.setMap(null); // Usuwamy starą linię, jeśli nie ma adresu
+            previousToPickupLine = null;
+        }
+        return;
+    }
+
+    let geocoder = new google.maps.Geocoder();
+    
+    geocoder.geocode({ address: previousAddress }, function (prevResults, prevStatus) {
+        if (prevStatus !== "OK") {
+            console.error("❌ Nie można znaleźć lokalizacji poprzedniego rozładunku:", prevStatus);
+            return;
+        }
+        
+        geocoder.geocode({ address: pickupAddress }, function (pickupResults, pickupStatus) {
+            if (pickupStatus !== "OK") {
+                console.error("❌ Nie można znaleźć lokalizacji załadunku:", pickupStatus);
+                return;
+            }
+            
+            let previousLocation = prevResults[0].geometry.location;
+            let pickupLocation = pickupResults[0].geometry.location;
+
+            if (previousToPickupLine) {
+                previousToPickupLine.setMap(null); // Usunięcie starej linii
+            }
+
+            previousToPickupLine = new google.maps.Polyline({
+                path: [previousLocation, pickupLocation],
+                geodesic: true,
+                strokeColor: "#FF69B4", // Różowy kolor
+                strokeOpacity: 1.0,
+                strokeWeight: 4
+            });
+
+            previousToPickupLine.setMap(map);
+        });
+    });
+}
+
 // 🔹 9. PRZELICZANIE DYSTANSU PO ZMIANIE TRASY
 function recalculateDistance() {
     let distanceResult = document.getElementById("distance-result");
