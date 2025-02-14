@@ -45,11 +45,16 @@ document.addEventListener("DOMContentLoaded", function () {
 
     let pickupInput = document.getElementById("pickup");
     let deliveryInput = document.getElementById("delivery");
+    let previousDeliveryInput = document.getElementById("previous-delivery");
     let stopsContainer = document.getElementById("stops-container");
 
     if (pickupInput && deliveryInput) {
         initAutocomplete(pickupInput);
         initAutocomplete(deliveryInput);
+    }
+    
+    if (previousDeliveryInput) {
+        initAutocomplete(previousDeliveryInput); // 🛠 Dodaj autocomplete dla poprzedniego rozładunku
     }
 
     if (deliveryInput) {
@@ -62,9 +67,15 @@ document.addEventListener("DOMContentLoaded", function () {
     if (pickupInput) {
         pickupInput.addEventListener("blur", updateRoute);
     }
-    
+
     if (stopsContainer) {
         stopsContainer.addEventListener("input", updateRoute);
+    }
+
+    if (previousDeliveryInput) {
+        previousDeliveryInput.addEventListener("blur", function () {
+            calculateRoute(); // 🔥 Uwzględnia poprzedni rozładunek w obliczaniu dystansu
+        });
     }
 
     document.getElementById("calculate-distance").addEventListener("click", calculateRoute);
@@ -73,13 +84,11 @@ document.addEventListener("DOMContentLoaded", function () {
         event.preventDefault(); // 🔥 Zapobiega odświeżaniu strony
         console.log("📩 Formularz wysłany!");
     });
-    
+
     document.getElementById("add-route-button").addEventListener("click", function () {
         updateTable(); // 🔥 Dodaje trasę do tabeli
         document.getElementById("transport-form").reset(); // 🔥 Czyści formularz po dodaniu
     });
-    
-    
 });
 
 function initAutocomplete(input) {
