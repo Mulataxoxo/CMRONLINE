@@ -546,6 +546,53 @@ window.addEventListener("beforeunload", function (event) {
     event.preventDefault(); // Standardowe zachowanie przeglądarki
     event.returnValue = "Czy na pewno chcesz odświeżyć stronę? Wszystkie utworzone trasy zostaną usunięte.";
 });
+// 🔹 Ukrywanie ekranu ładowania
+function hideLoadingScreen() {
+    let loadingScreen = document.getElementById("loading-screen");
+    if (loadingScreen) {
+        loadingScreen.style.display = "none";
+    }
+}
+
+// 🔹 Sprawdza, czy Google Maps API jest załadowane
+function waitForGoogleMaps(callback, retries = 5) {
+    let attempts = 0;
+
+    function check() {
+        if (typeof google !== "undefined" && google.maps) {
+            console.log("✅ Google Maps API gotowe!");
+            hideLoadingScreen(); // 🔥 Ukrywa ekran ładowania
+            callback();
+        } else {
+            attempts++;
+            if (attempts < retries) {
+                console.warn(`⏳ Google Maps API niegotowe. Próba ${attempts}/${retries}...`);
+                setTimeout(check, 2000); // Sprawdza co 2 sekundy
+            } else {
+                console.error("❌ Google Maps API NIE załadowało się! Próbuję ponownie...");
+                reloadGoogleMaps(); // 🔄 Przeładowuje API
+                setTimeout(() => waitForGoogleMaps(callback, retries), 5000); // 🔁 Kolejna próba za 5 sekund
+            }
+        }
+    }
+    check();
+}
+
+// 🔹 Funkcja ponownego ładowania Google Maps API
+function reloadGoogleMaps() {
+    console.warn("🔄 Ponowne ładowanie Google Maps API...");
+    let oldScript = document.querySelector("script[src*='maps.googleapis']");
+    if (oldScript) oldScript.remove();
+
+    let newScript = document.createElement("script");
+    newScript.src = "https://maps.googleapis.com/maps/api/js?key=AIzaSyBQfbB1-KewAmrPcoPXq4aYNsQggT1iPHY&libraries=places&callback=initMap";
+    newScript.async = true;
+    newScript.defer = true;
+    document.head.appendChild(newScript);
+}
+
+// 🔹 Inicjalizacja mapy z systemem powtarzania
+waitForGoogleMaps(initMap);
 
 
 

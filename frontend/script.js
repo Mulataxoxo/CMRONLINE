@@ -249,7 +249,7 @@ function calculateRoute() {
     let startAddress = previousDeliveryAddress ? previousDeliveryAddress : pickupAddress;
 
     let request = {
-        origin: pickupAddress,
+        origin: startAddress,
         destination: deliveryAddress,
         waypoints: waypoints,
         travelMode: "DRIVING",
@@ -272,6 +272,32 @@ function calculateRoute() {
         }
     });
 }
+
+let previousSegmentPolyline = null; // Globalna zmienna do usuwania starej linii
+
+// PODŚWIETLANIE POPRZEDNIEGO ODCINKA TRASY
+function highlightPreviousSegment(result) {
+    if (previousSegmentPolyline) {
+        previousSegmentPolyline.setMap(null); // Usuwa starą linię
+    }
+
+    let legs = result.routes[0].legs;
+
+    if (legs.length > 1) { // Jeśli są więcej niż dwa odcinki
+        let previousSegmentPath = legs[0].steps.map(step => step.start_location); // Pobiera odcinek startowy
+
+        previousSegmentPolyline = new google.maps.Polyline({
+            path: previousSegmentPath,
+            geodesic: true,
+            strokeColor: "#ff66b2", // Różowy
+            strokeOpacity: 1.0,
+            strokeWeight: 6
+        });
+
+        previousSegmentPolyline.setMap(map);
+    }
+}
+
 // 🔹 9. PRZELICZANIE DYSTANSU PO ZMIANIE TRASY
 function recalculateDistance() {
     let distanceResult = document.getElementById("distance-result");
