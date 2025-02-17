@@ -532,7 +532,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 });
 
-window.initMap = initMap;
+
 
 // 13🔹 Ostrzeżenie przed odświeżeniem strony lub zamknięciem karty
 window.addEventListener("beforeunload", function (event) {
@@ -568,3 +568,4 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 });
 
+window.initMap = initMap; // SPRAWDZAMY, CZY FUNKCJA `initMap()` JEST DOSTĘPNA GLOBALNIE

@@ -365,7 +365,7 @@ function updateRoute() {
     let pickupInput = document.getElementById("pickup");
     let deliveryInput = document.getElementById("delivery");
     let routeInput = document.getElementById("route");
-    let truckTypeSwitch = document.getElementById("truck-type-switch"); // 🔥 Pobieramy stan przełącznika
+    let truckTypeSwitch = document.getElementById("truck-type"); // 🔥 Pobieramy stan przełącznika
 
     if (!pickupInput || !deliveryInput || !routeInput) return;
     if (!pickupInput.value.trim() || !deliveryInput.value.trim()) {
@@ -596,7 +596,7 @@ function hideLoadingScreen() {
 }
 // 14 🔹 OBSŁUGA PRZEŁĄCZNIKA TRYBU (Europejec / Meblowy)
 document.addEventListener("DOMContentLoaded", function () {
-    let truckTypeSwitch = document.getElementById("truck-type-switch");
+    let truckTypeSwitch = document.getElementById("truck-type");
     let truckTypeLabel = document.getElementById("truck-type-label");
 
     // 🔥 Sprawdza ostatnie zapisane ustawienie w localStorage
@@ -643,6 +643,49 @@ function waitForGoogleMaps(callback, retries = 5) {
     }
     check();
 }
+document.addEventListener("DOMContentLoaded", function () {
+    let shareButton = document.getElementById("share-route-button");
+
+    if (shareButton) {
+        shareButton.addEventListener("click", function () {
+            let pickup = document.getElementById("pickup").value.trim();
+            let delivery = document.getElementById("delivery").value.trim();
+            let stops = Array.from(document.querySelectorAll(".stop-input"))
+                .map(input => input.value.trim())
+                .filter(stop => stop !== "");
+
+            let distanceText = document.getElementById("distance-result").innerText || "Brak danych";
+            let distanceValue = distanceText.replace("Łączny dystans: ", "").replace(" km", "").trim();
+
+            if (!pickup || !delivery) {
+                alert("❗ Podaj adres załadunku i rozładunku przed udostępnieniem.");
+                return;
+            }
+
+            // Tworzymy adres URL do Google Maps
+            let mapsURL = `https://www.google.com/maps/dir/${encodeURIComponent(pickup)}`;
+            stops.forEach(stop => {
+                mapsURL += `/${encodeURIComponent(stop)}`;
+            });
+            mapsURL += `/${encodeURIComponent(delivery)}`;
+
+            // Tworzymy pełny link do udostępnienia z dystansem
+            let shareText = `📍 Trasa: ${pickup} ➝ ${stops.join(" ➝ ")} ➝ ${delivery}\n🚛 Dystans: ${distanceValue} km\n🔗 Mapa: ${mapsURL}`;
+
+            // Kopiowanie linku do schowka
+            navigator.clipboard.writeText(shareText).then(() => {
+                alert("📍 Link do trasy został skopiowany do schowka:\n" + shareText);
+            }).catch(err => {
+                console.error("❌ Błąd podczas kopiowania linku:", err);
+                alert("❌ Nie udało się skopiować linku.");
+            });
+
+            // Otwórz mapę w nowej karcie
+            window.open(mapsURL, "_blank");
+        });
+    }
+});
+
 
 // 🔹 Funkcja ponownego ładowania Google Maps API
 function reloadGoogleMaps() {
