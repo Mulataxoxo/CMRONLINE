@@ -318,6 +318,7 @@ function updateRoute() {
     let pickupInput = document.getElementById("pickup");
     let deliveryInput = document.getElementById("delivery");
     let routeInput = document.getElementById("route");
+    let truckTypeSwitch = document.getElementById("truck-type-switch"); // 🔥 Pobieramy stan przełącznika
 
     if (!pickupInput || !deliveryInput || !routeInput) return;
     if (!pickupInput.value.trim() || !deliveryInput.value.trim()) {
@@ -332,10 +333,30 @@ function updateRoute() {
         .map(stop => getPostalCode(stop))
         .filter(code => code !== "");
 
-    let fullRoute = [pickupCode, ...stopsCodes, deliveryCode].join("-");
+        if (truckTypeSwitch.checked) {
+            // 🔹 TRYB EUROPEJEC (DOMYŚLNY)
 
+    let fullRoute = [pickupCode, ...stopsCodes, deliveryCode].join("-");
     routeInput.value = fullRoute;
-    console.log("🚛 Trasa wygenerowana:", fullRoute);
+
+} else {
+    // 🔹 TRYB MEBLOWY (SPECJALNE FORMATOWANIE)
+    if (stopsCodes.length > 0) {
+        let firstStop = stopsCodes[0]; // 🔥 Pierwszy przystanek
+        let firstStopPrefix = firstStop.substring(0, 2); // Prefiks kraju
+        let firstStopPostal = firstStop.match(/\d{2}/); // Pierwsze dwie cyfry kodu pocztowego
+
+        let formattedStops = `${firstStopPrefix}${firstStopPostal ? firstStopPostal[0] : "00"}*${stopsCodes.length - 1}`;
+        let fullRoute = `${pickupCode}-${formattedStops}-${deliveryCode}`;
+
+        routeInput.value = fullRoute;
+    } else {
+        // 🔹 Jeśli brak przystanków → standardowy format
+        routeInput.value = `${pickupCode}-${deliveryCode}`;
+    }
+}
+
+console.log("🚛 Trasa wygenerowana:", routeInput.value);
 }
 // 🔹 11. POBIERANIE KODU POCZTOWEGO I KRAJU
 function getPostalCode(input) {
@@ -389,7 +410,7 @@ function updateTable() {
     let pickupAddress = document.getElementById("pickup").value || "";
     let deliveryAddress = document.getElementById("delivery").value || "";
     let route = document.getElementById("route").value || "";
-    let plannedKm = document.getElementById("distance-result").innerText.replace("Łączny dystans: ", "").replace(" km", "") || "";
+    let plannedKm = document.getElementById("distance-result").innerText.replace("Łączny dystans: ", "").replace(" km", "").replace(".", ",") || "";
     let country = document.getElementById("country").value || "";
 
     // 🔹 Pobranie nazwy plików załączników
@@ -405,7 +426,26 @@ function updateTable() {
     }
 
     let tbody = document.querySelector("#data-table tbody");
-    
+
+    // 🔹 Sprawdzenie, czy ostatni wiersz zawiera dane
+    let lastRow = tbody.lastElementChild;
+    let lastDeliveryAddress = "";
+    let lastVehicle = "";
+
+    if (lastRow && lastRow.cells.length > 1) { // Upewniamy się, że wiersz istnieje
+        lastDeliveryAddress = lastRow.cells[6].textContent.trim(); // Pobiera adres rozładunku z poprzedniego wiersza
+        lastVehicle = lastRow.cells[1].textContent.trim(); // Pobiera ostatni pojazd
+    }
+
+    // 🔹 Ustawienie poprzedniego rozładunku jako domyślnego
+    if (!document.getElementById("previous-delivery").value) {
+        document.getElementById("previous-delivery").value = lastDeliveryAddress;
+    }
+
+    // 🔹 Jeśli użytkownik zmieni pojazd → Czyści pole poprzedniego rozładunku
+    document.getElementById("vehicle").addEventListener("change", function () {
+        document.getElementById("previous-delivery").value = "";
+    });
 
     // 🔹 Tworzymy nowy wiersz
     let row = document.createElement("tr");
@@ -501,4 +541,30 @@ window.addEventListener("beforeunload", function (event) {
 });
 
 
+// 14 🔹 OBSŁUGA PRZEŁĄCZNIKA TRYBU (Europejec / Meblowy)
+document.addEventListener("DOMContentLoaded", function () {
+    let truckTypeSwitch = document.getElementById("truck-type-switch");
+    let truckTypeLabel = document.getElementById("truck-type-label");
+
+    // 🔥 Sprawdza ostatnie zapisane ustawienie w localStorage
+    let savedMode = localStorage.getItem("truckTypeMode");
+    if (savedMode === "europejec") {
+        truckTypeSwitch.checked = true;
+        truckTypeLabel.textContent = "Europejec";
+    } else {
+        truckTypeSwitch.checked = false;
+        truckTypeLabel.textContent = "Meblowy";
+    }
+
+    // 🔥 Zmienia tekst i zapisuje wybór po kliknięciu przełącznika
+    truckTypeSwitch.addEventListener("change", function () {
+        if (this.checked) {
+            truckTypeLabel.textContent = "Europejec";
+            localStorage.setItem("truckTypeMode", "europejec");
+        } else {
+            truckTypeLabel.textContent = "Meblowy";
+            localStorage.setItem("truckTypeMode", "meblowy");
+        }
+    });
+});
 
