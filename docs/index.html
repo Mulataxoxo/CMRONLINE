@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="pl">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>CMR ONLINE</title>
+        <link rel="stylesheet" href="styles.css">
+        <script src="script.js" defer></script>
+        <style>
+    
+        /* Cała strona szeroko */
+        .container {
+            width: 95%;
+            margin: 0 auto;
+        }
+
+        /* Formularz i Excel obok siebie */
+        .content-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            width: 100%;
+        }
+
+        /* Formularz szeroki */
+        #transport-form {
+            width: 55%;
+        }
+
+        /* Podgląd Excela szeroki */
+        .excel-preview {
+            width: 40%;
+            padding-left: 20px;
+        }
+
+        /* Podgląd Excela (rozszerzony) */
+        .excel-preview iframe {
+            width: 100%;
+            height: 600px;
+            border: none;
+        }
+
+        /* Tabela na całą szerokość */
+        .table-container {
+            margin-top: 30px;
+            padding: 20px;
+            border: 2px solid #ff66b2; 
+            border-radius: 5px;
+            background-color: #fff0f5; 
+            width: 100%;
+        }
+
+        /* Nagłówki tabeli na różowo */
+        #data-table thead {
+            background-color: #ff99cc;
+            color: black;
+            font-weight: bold;
+        }
+
+        /* Szeroka tabela */
+        #data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        /* Obramowanie komórek tabeli */
+        #data-table th, #data-table td {
+            border: 1px solid #ff66b2;
+            padding: 10px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <!-- 🔹 Ekran ładowania -->
+    <div id="loading-screen">
+        <p>Poczekaj, aż wszystko się załaduje... jeszcze chwilka</p>
+    </div>
+
+    <div class="container">
+
+        <!-- Logo Firmy -->
+        <div class="logo-container">
+            <img src="logo.png" alt="Graal-Grand Logo">
+        </div>  
+
+        <h1>CMR ONLINE</h1>
+
+        <!-- 📌 FORMULARZ I EXCEL OBOK SIEBIE (SZEROKO) -->
+        <div class="content-container">
+
+            <!-- FORMULARZ (SZEROKO) -->
+<form id="transport-form">
+    
+    <!-- 🔹 PRZEŁĄCZNIK TRYBU EUROPEJEC / MEBLOWY -->
+    <div class="switch-container">
+        <label class="switch">
+            <input type="checkbox" id="truck-type">
+            <span class="slider"></span>
+        </label>
+        <span id="truck-type-label">🚛 Europejec</span>
+    </div>
+
+    <div class="form-group">
+        <div>
+            <label for="company">Wybierz firmę:</label>
+            <select id="company" name="company">
+                <option value="">-- Wybierz firmę --</option>
+                <option value="grand">Grand</option>
+                <option value="graal_wit">Graal Wit</option>
+            </select>
+        </div>
+        
+        <div>
+            <label for="vehicle">Wybierz pojazd:</label>
+            <select id="vehicle" name="vehicle" disabled>
+                <option value="">-- Wybierz samochód --</option>
+            </select>
+        </div>
+    </div>
+
+
+                <div class="form-group">
+                    <div>
+                        <label for="pickup-date">Data załadunku:</label>
+                        <input type="date" id="pickup-date" name="pickup-date">
+                    </div>
+                    <div>
+                        <label for="delivery-date">Data rozładunku:</label>
+                        <input type="date" id="delivery-date" name="delivery-date">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <div>
+                        <label for="pickup-time">Godzina załadunku:</label>
+                        <input type="time" id="pickup-time" name="pickup-time">
+                    </div>
+                    <div>
+                        <label for="delivery-time">Godzina rozładunku:</label>
+                        <input type="time" id="delivery-time" name="delivery-time">
+                    </div>
+                </div>
+                
+
+                <div class="form-group">
+                    <label for="previous-delivery">Poprzedni rozładunek:</label>
+                    <input id="previous-delivery" type="text" name="previous-delivery" placeholder="Wpisz adres lub kod">
+                </div>
+                
+
+                <div class="trasa-container">
+                    <label for="pickup">Adres załadunku:</label>
+                    <input id="pickup" type="text" name="pickup" placeholder="Wpisz kod pocztowy lub adres">
+
+                    <div id="stops-container"></div>
+
+                    <button type="button" id="add-stop">➕ Dodaj przystanek</button>
+
+                    <label for="delivery">Adres rozładunku:</label>
+                    <input id="delivery" type="text" name="delivery" placeholder="Wpisz kod pocztowy lub adres">
+                </div>
+
+                <div class="form-group">
+                    <div>
+                        <label for="country">Kraj rozładunku:</label>
+                        <input id="country" type="text" name="country" readonly>
+                    </div>
+                    <div>
+                        <label for="vat-rate">Stawka VAT:</label>
+                        <input id="vat-rate" type="text" name="vat-rate" readonly>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div>
+                        <label for="toll-roads">Uwzględnij płatne drogi:</label>
+                        <input type="checkbox" id="toll-roads">
+                    </div>
+                    <div>
+                        <button type="button" id="calculate-distance">Oblicz dystans</button>
+                        <p id="distance-result">Łączny dystans: 0 km</p>
+                        <label for="map-link">🔗 Link do trasy:</label>
+                        <input type="text" id="map-link" readonly>
+
+                    </div>
+                </div>
+                <div id="map" style="height: 500px; width: 100%; border: 1px solid black;"></div>
+
+                <button id="share-route-button">📍 Udostępnij trasę</button>
+
+                
+                <div class="form-group">
+                    <label for="route">Trasa:</label>
+                    <input id="route" type="text" name="route" readonly>
+                </div>
+
+                <div class="file-section">
+                    <div class="file-upload">
+                        <label for="cmr-photo">📄 Dodaj zdjęcie CMR:</label>
+                        <input type="file" id="cmr-photo" name="cmr-photo" accept="image/*" multiple>
+                    </div>
+                    <div class="file-upload">
+                        <label for="hotel-invoice">🏨 Dodaj fakturę hotelową:</label>
+                        <input type="file" id="hotel-invoice" name="hotel-invoice" accept="image/*" multiple>
+                    </div>
+                </div>
+
+                <button type="button" id="add-route-button">➕ Dodaj trasę do tabeli</button>
+            </form>
+
+            <!-- 📊 PODGLĄD EXCEL (SZEROKO) -->
+            <div class="excel-preview">
+                <h3>📊 Podgląd pliku Excel</h3>
+                <iframe src="https://1drv.ms/x/c/61a901a2b887f8b3/IQS6pe-RBfElS54M89MCjavyASa8jiCEeR5iZ9-RWcwx7Uk?em=2&wdAllowInteractivity=False&Item=LISTA_TRASEK&wdHideGridlines=True&wdDownloadButton=True&wdInConfigurator=True&wdInConfigurator=True"></iframe>
+            </div>
+
+        </div>
+
+        <!-- 📋 SZEROKA TABELA DO SKOPIOWANIA -->
+        <div class="table-container">
+            <h3>📋 Wiersz do skopiowania</h3>
+            <button id="usun-duplikaty-button">🗑 USUŃ DUPLIKATY</button>
+            <table id="data-table">
+                <thead>
+                    <tr>
+                        <th>Usuń</th>
+                        <th>AUTKO</th>
+                        <th>Data</th>
+                        <th>Trasa</th>
+                        <th>DATA ZAŁADUNKU</th>
+                        <th>ADRES ZAŁADUNKU</th>
+                        <th>GODZINA ZAŁADUNKU</th> <!-- NOWA KOLUMNA -->
+                        <th>DATA ROZŁADUNKU</th>
+                        <th>ADRES ROZŁADUNKU</th>
+                        <th>GODZINA ROZŁADUNKU</th> <!-- NOWA KOLUMNA -->
+                        <th>LINK DO TRASY</th> <!-- NOWA KOLUMNA -->
+                        <th>Nr zlecenia</th>
+                        <th>ZLECENIE PDF</th>
+                        <th>Km planowane</th>
+                        <th>KWOTA ZLECENIA</th>
+                        <th>Stawka</th>
+                        <th>Hotele</th>
+                        <th>FAKTURA ZA HOTEL</th>
+                        <th>Różnica</th>
+                        <th>Opłaty za drogi</th>
+                        <th>Paliwo</th>
+                        <th>Faktura</th>
+                        <th>DATA WYSTAWIENIA</th>
+                        <th>FAKTURA PDF</th>
+                        <th>DOKUMENTY CMR</th>
+                        <th>KRAJ ROZŁADUNKU</th>
+                    </tr>
+                </thead>                
+                <tbody>
+                    <tr id="data-row">
+                        <td colspan="25" style="text-align: center;">Brak danych</td> <!-- Poprawiona liczba kolumn -->
+                    </tr>
+                </tbody>                
+            </table>
+
+            <button id="copy-button">📋 Kopiuj do schowka</button>
+        </div>
+    </div>
+</body>
+</html>

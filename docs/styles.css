@@ -1,0 +1,275 @@
+/* Resetowanie stylów */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Arial", sans-serif;
+}
+
+/* Stylizacja całej strony */
+body {
+    background-color: #f4f6f9;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+/* Kontener formularza */
+.container {
+    background-color: white;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    width: 900px;
+    text-align: center;
+}
+
+/* Logo */
+.logo-container {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.logo-container img {
+    max-width: 180px;
+}
+
+/* Nagłówek */
+h1 {
+    font-size: 30px;
+    color: #1d3557;
+    text-transform: uppercase;
+    font-weight: bold;
+    margin-bottom: 15px;
+}
+
+/* Linie oddzielające sekcje */
+hr {
+    border: 1px solid #1d3557;
+    margin: 10px 0;
+}
+
+/* Etykiety */
+label {
+    font-size: 14px;
+    font-weight: bold;
+    display: block;
+    text-align: left;
+    margin-top: 10px;
+    color: #333;
+}
+
+/* Pola formularza */
+input, select {
+    width: 100%;
+    padding: 8px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    margin-top: 5px;
+}
+
+select {
+    background-color: #fff;
+    cursor: pointer;
+}
+
+/* Układ sekcji w dwóch kolumnach */
+.form-group {
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+}
+
+.form-group div {
+    width: 48%;
+}
+
+/* Układ pól załadunku -> przystanki -> rozładunek */
+.trasa-container {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* Kontener dla przystanków */
+#stops-container {
+    margin-top: 10px;
+}
+
+/* Stylizacja dla przystanków */
+.stop-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+/* Pole przystanku */
+.stop-container input {
+    flex-grow: 1;
+    padding: 8px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+/* Przycisk usuwania (kosz) - teraz mniejszy i zielony */
+.delete-stop {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 30px; /* Mniejsza ikona */
+    color: green; /* Zielony kolor */
+    transition: color 0.2s;
+    padding: 3px; /* Mniejszy padding, żeby przycisk był węższy */
+    width: 30px; /* Węższy przycisk */
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.delete-stop:hover {
+    color: darkgreen; /* Ciemniejszy zielony po najechaniu */
+}
+
+
+/* Stylizacja przycisku */
+button {
+    width: 100%;
+    background-color: #1d3557;
+    color: white;
+    font-size: 16px;
+    padding: 12px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 15px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+button:hover {
+    background-color: #457b9d;
+}
+
+/* Stylizacja pola przesyłania plików */
+.file-upload {
+    border: 2px dashed #457b9d;
+    padding: 15px;
+    text-align: center;
+    border-radius: 5px;
+    background-color: #f8f9fa;
+    margin-top: 10px;
+    cursor: pointer;
+    width: 48%;
+    display: inline-block;
+}
+
+.file-upload:hover {
+    background-color: #e3e6ea;
+}
+
+/* Sekcja dodawania zdjęć */
+.file-section {
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+/* Stylizacja pola z dystansem */
+#distance-result {
+    font-size: 16px;
+    color: #1d3557;
+    font-weight: bold;
+    margin-top: 10px;
+    text-align: center;
+}
+
+/* Kontener dla mapy */
+.map-container {
+    width: 100%;
+    height: 250px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    margin-top: 15px;
+}
+
+#loading-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8); /* Półprzezroczyste tło */
+    color: white;
+    font-size: 24px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999; /* Zawsze na wierzchu */
+}
+/* 🔹 PRZEŁĄCZNIK TRYBU EUROPEJEC / MEBLOWY */
+.switch-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 25px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: red; /* Domyślnie meblowy */
+    border-radius: 25px;
+    transition: 0.4s;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 4px;
+    bottom: 3.5px;
+    background-color: white;
+    border-radius: 50%;
+    transition: 0.4s;
+}
+
+input:checked + .slider {
+    background-color: green; /* Europejec */
+}
+
+input:checked + .slider:before {
+    transform: translateX(25px);
+}
+
+/* 🔹 Tekst obok przełącznika */
+#truck-type-label {
+    font-size: 14px;
+    font-weight: bold;
+    color: #333;
+}
